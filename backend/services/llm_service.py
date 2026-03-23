@@ -1,7 +1,12 @@
 import requests
 
+HF_API_KEY = "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"
+
+MODEL_URL = "https://api-inference.huggingface.co/models/google/flan-t5-large"
+
+
 def generate_answer(context_chunks, question):
-    context = "\n\n".join(context_chunks)
+    context = "\n".join(context_chunks)
 
     prompt = f"""
 You are a helpful AI assistant.
@@ -12,74 +17,76 @@ Context:
 Question:
 {question}
 
-Answer clearly.
+Answer clearly:
 """
 
     response = requests.post(
-        "http://localhost:11434/api/generate",
+        MODEL_URL,
+        headers={
+            "Authorization": f"Bearer {HF_API_KEY}"
+        },
         json={
-            "model": "llama3",
-            "prompt": prompt,
-            "stream": False
+            "inputs": prompt
         }
     )
 
-    return response.json()["response"]
+    result = response.json()
+
+    # handle HF response format
+    if isinstance(result, list):
+        return result[0]["generated_text"]
+
+    return str(result)
 
 
+# ---------- SQL GENERATION ----------
 def generate_sql(query):
     prompt = f"""
 You are a PostgreSQL expert.
 
-Database Schema:
-
 Table: sales
 Columns:
-- id (integer)
-- customer_name (text)
-- revenue (integer)
+- id
+- customer_name
+- revenue
 
 Rules:
-- Only use the given table and columns
-- Do NOT hallucinate columns
 - Return ONLY SQL query
 - No explanation
-- Use LIMIT when needed
-
-Examples:
-Q: top 3 customers by revenue
-A: SELECT customer_name, revenue FROM sales ORDER BY revenue DESC LIMIT 3;
-
-Q: average revenue
-A: SELECT AVG(revenue) FROM sales;
-
-Now convert:
 
 User Question:
 {query}
 """
 
     response = requests.post(
-        "http://localhost:11434/api/generate",
+        MODEL_URL,
+        headers={
+            "Authorization": f"Bearer {HF_API_KEY}"
+        },
         json={
-            "model": "llama3",
-            "prompt": prompt,
-            "stream": False
+            "inputs": prompt
         }
     )
 
-    return response.json()["response"].strip()
+    result = response.json()
+
+    if isinstance(result, list):
+        return result[0]["generated_text"]
+
+    return str(result)
 
 
+# ---------- CLEAN SQL ----------
 def clean_sql(sql):
     sql = sql.strip()
 
-    # remove ```sql blocks if present
     if "```" in sql:
         sql = sql.split("```")[1]
 
     return sql.replace("sql", "").strip()
 
+
+# ---------- SAFETY ----------
 def is_safe_query(sql):
     dangerous = ["DROP", "DELETE", "UPDATE", "INSERT"]
 
