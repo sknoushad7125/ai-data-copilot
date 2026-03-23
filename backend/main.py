@@ -1,5 +1,8 @@
 from fastapi import FastAPI, UploadFile, File
 import os
+port = int(os.environ.get("PORT", 10000))
+
+# FastAPI doesn't use app.run, uvicorn handles it
 
 # services
 from services.file_processor import extract_text, chunk_text
