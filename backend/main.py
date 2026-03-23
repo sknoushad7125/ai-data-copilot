@@ -110,3 +110,4 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+uvicorn main:app --host 0.0.0.0 --port 10000
