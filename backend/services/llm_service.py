@@ -1,6 +1,6 @@
 import requests
 
-HF_API_KEY = "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"
+HF_API_KEY = "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"
 
 MODEL_URL = "https://api-inference.huggingface.co/models/google/flan-t5-large"
 
