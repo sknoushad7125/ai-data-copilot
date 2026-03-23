@@ -1,0 +1,12 @@
+version: "3"
+
+services:
+  db:
+    image: postgres
+    container_name: copilot_db
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: pass
+      POSTGRES_DB: copilot
+    ports:
+      - "5432:5432"
